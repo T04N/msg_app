@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "589107256935",
+    "firebase_url": "https://flutter-prep-f989c-default-rtdb.firebaseio.com",
+    "project_id": "flutter-prep-f989c",
+    "storage_bucket": "flutter-prep-f989c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589107256935:android:76be4b50719d69af037ec2",
+        "android_client_info": {
+          "package_name": "com.example.msgApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMNjKPycHBjlqwKH49NpsJ3sJjlBmohmE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589107256935:android:13cf8cdce3c75abd037ec2",
+        "android_client_info": {
+          "package_name": "com.example.msg_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMNjKPycHBjlqwKH49NpsJ3sJjlBmohmE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

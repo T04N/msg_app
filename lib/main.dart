@@ -1,7 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:msg_app/firebase_options.dart';
 import 'package:msg_app/screens/auth_screen.dart';
 
 void main() {
+   Firebase.initializeApp(
+     options: DefaultFirebaseOptions.currentPlatform,
+   );
   runApp(const App());
 }
 

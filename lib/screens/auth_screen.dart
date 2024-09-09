@@ -1,11 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
-
-
-final _fireBase = Firebase.
+final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,17 +18,29 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredEmail = "";
   var _enteredPassword = "";
 
-  void _submit() {
+  Future<void> _submit() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
       _formKey.currentState!.save();
-      debugPrint('Email: $_enteredEmail');
-      debugPrint('Password: $_enteredPassword');
+
     } else {
       debugPrint('Form is not valid');
     }
+    if (_isLogin) {} else {
+      try {
+        final userCredentials = await _firebase.createUserWithEmailAndPassword(
+            email: _enteredEmail, password: _enteredPassword);
+        print(userCredentials);
+      } on FirebaseAuthException catch (error) {
+        if (error.code == "email-already-in-use") {
+          //...
+        }
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.message ?? 'Authenticattion failt')));
+      }
+    }
   }
-
 
   void _changeIsLogin() {
     setState(() {
@@ -41,7 +51,10 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme
+          .of(context)
+          .colorScheme
+          .primary,
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -71,7 +84,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           autocorrect: false,
                           validator: (value) {
                             if (value == null ||
-                                value.trim().isEmpty ||
+                                value
+                                    .trim()
+                                    .isEmpty ||
                                 !value.contains("@")) {
                               return "Please enter a valid email";
                             }
@@ -85,7 +100,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Password',
                           ),
-                          keyboardType: TextInputType.text, // Đúng kiểu cho mật khẩu
+                          keyboardType: TextInputType.text,
+                          // Đúng kiểu cho mật khẩu
                           obscureText: true,
                           validator: (value) {
                             if (value == null || value.length < 6) {
