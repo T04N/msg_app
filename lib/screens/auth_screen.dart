@@ -1,7 +1,13 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import '../widgets/img_input.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -17,27 +23,56 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   var _enteredEmail = "";
   var _enteredPassword = "";
+  var _isAuthenticating = false;
+  File? _selectImage;
 
   Future<void> _submit() async {
     final isValid = _formKey.currentState!.validate();
+    if (!isValid || (!_isLogin && _selectImage == null)) {
+      return;
+    }
+
     if (isValid) {
       _formKey.currentState!.save();
-
     } else {
       debugPrint('Form is not valid');
     }
-    if (_isLogin) {} else {
+
+    if (_isLogin) {
+    } else {
       try {
+        setState(() {
+          _isAuthenticating = true;
+        });
         final userCredentials = await _firebase.createUserWithEmailAndPassword(
             email: _enteredEmail, password: _enteredPassword);
-        print(userCredentials);
+
+        final storeRef = FirebaseStorage.instance
+            .ref()
+            .child("user_imgs")
+            .child('${userCredentials.user!.uid}.jpg');
+
+        await storeRef.putFile(_selectImage!);
+        final imgeUrl = await storeRef.getDownloadURL();
+       
+        FirebaseFirestore.instance.collection("user").doc(userCredentials.user!.uid).set({
+          'username' : 'to be done' ,
+          'email' : _enteredEmail,
+          'img_url' : imgeUrl,
+        });
+        
+        
       } on FirebaseAuthException catch (error) {
+        debugPrint('FirebaseAuthException occurred: ${error.code}');
         if (error.code == "email-already-in-use") {
           //...
         }
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error.message ?? 'Authenticattion failt')));
+        setState(() {
+          _isAuthenticating = false;
+        });
       }
     }
   }
@@ -51,10 +86,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme
-          .of(context)
-          .colorScheme
-          .primary,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -75,6 +107,12 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (!_isLogin)
+                          UserImagePicker(
+                            onPickImage: (File pickedImage) {
+                              _selectImage = pickedImage;
+                            },
+                          ),
                         TextFormField(
                           decoration: const InputDecoration(
                             labelText: 'Email Address',
@@ -84,9 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           autocorrect: false,
                           validator: (value) {
                             if (value == null ||
-                                value
-                                    .trim()
-                                    .isEmpty ||
+                                value.trim().isEmpty ||
                                 !value.contains("@")) {
                               return "Please enter a valid email";
                             }
@@ -116,9 +152,12 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(
                           height: 16,
                         ),
+                        if (_isAuthenticating)
+                          CircularProgressIndicator(),
+
                         ElevatedButton(
                           onPressed: _submit,
-                          child: const Text("Login"),
+                          child: Text(_isLogin ? "Login" : "Sign Up"),
                         ),
                         const SizedBox(
                           height: 10,
